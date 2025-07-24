@@ -1,4 +1,4 @@
-package com.GimoMagic.gymbodygold
+package com.gimomagic.gymbodygold
 
 import org.junit.Test
 
