@@ -48,7 +48,7 @@ fun OnBoardingScreen(
 
             Text(
                 text = "Entrena como nunca antes",
-                color = Color(0xFFFFC107), // amarillo
+                color = Color(0xFFFFBF33), // amarillo
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -82,26 +82,45 @@ fun OnBoardingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onNext,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFC107)
-                ),
-                shape = RoundedCornerShape(50),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text("Siguiente", color = Color.Black)
+                Button(
+                    onClick = onNext,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFBF33)
+                    ),
+                    shape = RoundedCornerShape(60),
+                    modifier = Modifier
+                        .height(50.dp)
+                ) {
+                    Text("Siguiente >", color = Color.Black)
+                }
             }
         }
 
-        Text(
-            text = "Saltar",
-            color = Color.Yellow,
+        Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .clickable { onSkip() }
-        )
+                .border(
+                    width = 1.dp,
+                    color = Color(0xFFFFC107),
+                    shape = RoundedCornerShape(50)
+                )
+                .padding(2.dp)
+        ) {
+            Button(
+                onClick = onSkip,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF424242)
+                ),
+                shape = RoundedCornerShape(50),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Saltar", color = Color(0xFFFFC107), fontSize = 14.sp)
+            }
+        }
+
     }
 }

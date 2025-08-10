@@ -1,4 +1,4 @@
-package com.example.gymbodygold
+package com.gimomagic.gymbodygold
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
