@@ -3,45 +3,30 @@ package com.gimomagic.gymbodygold
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import com.gimomagic.gymbodygold.ui.screens.OnBoardingScreen
 import com.gimomagic.gymbodygold.ui.theme.GymBodyGoldTheme
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             GymBodyGoldTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                Surface(
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    OnBoardingScreen(
+                        onSkip = {
+                            // Acción cuando el usuario omite el onboarding
+                            println("Onboarding skipped")
+                        },
+                        onNext = {
+                            // Acción cuando el usuario presiona "Siguiente"
+                            println("Onboarding next step")
+                        }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GymBodyGoldTheme {
-        Greeting("Android")
     }
 }
