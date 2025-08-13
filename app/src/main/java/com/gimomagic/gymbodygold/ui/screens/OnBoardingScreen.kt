@@ -44,8 +44,7 @@ fun OnBoardingScreen(
             title = "Entrenamiento\nPersonalizado",
             subtitle = "Rutinas diseñadas para ti",
             description = "Mejora con el acompañamiento\nde tu coach."
-        )
-        ,
+        ),
         OnboardingPage(
             title = "Planes a tu medida",
             subtitle = "Tú decides cómo y cuándo",
@@ -85,7 +84,7 @@ fun OnBoardingScreen(
                         modifier = Modifier
                             .border(
                                 width = 1.dp,
-                                color = Color(0xFFFFBF33), // Borde amarillo
+                                color = Color(0xFFBEA314), // Borde amarillo
                                 shape = RoundedCornerShape(50.dp)
                             )
                             .background(Color(0xFF292929), RoundedCornerShape(50.dp)) // Fondo gris
@@ -93,7 +92,7 @@ fun OnBoardingScreen(
                     ) {
                         Text(
                             text = "Saltar",
-                            color = Color(0xFFFFBF33), // Texto amarillo
+                            color = Color(0xFFBEA314), // Texto amarillo
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -150,20 +149,24 @@ fun OnBoardingScreen(
                         onClick = {
                             if (currentPage > 0) currentPage--
                         },
-                        border = BorderStroke(1.dp, Color(0xFFFFBF33)),
+                        border = BorderStroke(1.dp, Color(0xFFBEA314)),
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = Color.Transparent,
-                            contentColor = Color(0xFFFFBF33)
+                            contentColor = Color(0xFFBEA314)
                         ),
                         modifier = Modifier.height(50.dp)
                     ) {
                         Text("Anterior")
                     }
 
+                    // Definimos variables para mejor legibilidad
+                    val isLastPage = currentPage == pages.lastIndex
+                    val buttonText = if (isLastPage) "Comenzar ->" else "Siguiente"
+
                     Button(
                         onClick = {
-                            if (currentPage < pages.size - 1) {
+                            if (!isLastPage) {
                                 currentPage++
                                 onNext()
                             } else {
@@ -171,15 +174,13 @@ fun OnBoardingScreen(
                             }
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFBF33)
+                            containerColor = Color(0xFFBEA314),
+                            contentColor = Color.Black
                         ),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.height(50.dp)
                     ) {
-                        Text(
-                            if (currentPage == pages.size - 1) "Comenzar ->" else "Siguiente",
-                            color = Color.Black
-                        )
+                        Text(buttonText)
                     }
                 }
             }
