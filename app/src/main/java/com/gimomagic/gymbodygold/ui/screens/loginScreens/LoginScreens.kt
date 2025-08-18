@@ -52,7 +52,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 
 @Composable
-fun LoginScreens() {
+fun LoginScreens(
+    onForgotPasswordClick: () -> Unit = {}
+) {
     var isLoginScreen by remember { mutableStateOf(true) }
 
     Box(
@@ -120,7 +122,9 @@ fun LoginScreens() {
             Spacer(modifier = Modifier.height(32.dp))
 
             if (isLoginScreen) {
-                LoginContent()
+                LoginContent(
+                    onForgotPasswordClick = onForgotPasswordClick // PARÁMETRO PASADO
+                )
             } else {
                 CreateAccountContent()
             }
@@ -129,7 +133,9 @@ fun LoginScreens() {
 }
 
 @Composable
-fun LoginContent() {
+fun LoginContent(
+    onForgotPasswordClick: () -> Unit = {}
+) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val goldColor = Color(0xFFBEA314)
@@ -143,11 +149,11 @@ fun LoginContent() {
             value = email,
             onValueChange = { email = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Email", color = Color(0xFFBEA314)) },
+            label = { Text("Email", color = Color(0xFFFFBF33)) },
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Email, "Icono de contraseña",tint = Color(0xFFBEA314))
+                Icon(imageVector = Icons.Default.Email, "Icono de email",tint = Color(0xFFBEA314))
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
@@ -171,7 +177,7 @@ fun LoginContent() {
             value = password,
             onValueChange = { password = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("Contraseña", color = Color(0xFFBEA314)) },
+            label = { Text("Contraseña", color = Color(0xFFFFBF33)) },
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             visualTransformation = PasswordVisualTransformation(),
@@ -219,7 +225,9 @@ fun LoginContent() {
             color = Color.LightGray,
             fontSize = 14.sp,
             textDecoration = TextDecoration.Underline,
-            modifier = Modifier.clickable { /* Handle forgot password click */ }
+            modifier = Modifier.clickable {
+                onForgotPasswordClick() // Esto debe ejecutar la navegación
+            }
         )
     }
 }
@@ -374,7 +382,7 @@ fun CreateAccountContent() {
                 label = { Text("Tipo de Documento", color = Color.Gray) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = documentTypeExpanded) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de documento",tint = Color(0xFFBEA314))
+                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de documento",tint = Color(0xFFFFBF33))
                 },
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -533,7 +541,7 @@ fun CreateAccountContent() {
                 shape = RoundedCornerShape(12.dp),
                 isError = lastNameError.isNotEmpty(),
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de Persona",tint = Color(0xFFBEA314))
+                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de Persona",tint = Color(0xFFFFBF33))
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF2C2B30),
@@ -578,7 +586,7 @@ fun CreateAccountContent() {
                 shape = RoundedCornerShape(12.dp),
                 isError = usernameError.isNotEmpty(),
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Icono de Usuario",tint = Color(0xFFBEA314))
+                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Icono de Usuario",tint = Color(0xFFFFBF33))
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF2C2B30),
@@ -763,7 +771,7 @@ fun CreateAccountContent() {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 isError = phoneError.isNotEmpty(),
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Phone, contentDescription = "Icono de telefono",tint = Color(0xFFBEA314))
+                    Icon(imageVector = Icons.Default.Phone, contentDescription = "Icono de telefono",tint = Color(0xFFFFBF33))
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF2C2B30),
@@ -802,7 +810,7 @@ fun CreateAccountContent() {
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Home, contentDescription = "Icono de dirección",tint = Color(0xFFBEA314))
+                Icon(imageVector = Icons.Default.Home, contentDescription = "Icono de dirección",tint = Color(0xFFFFBF33))
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
@@ -889,7 +897,7 @@ fun CreateAccountContent() {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     isError = weightError.isNotEmpty(),
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Peso",tint = Color(0xFFBEA314))
+                        Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Peso",tint = Color(0xFFFFBF33))
                     },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF2C2B30),
@@ -936,7 +944,7 @@ fun CreateAccountContent() {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 isError = heightError.isNotEmpty(),
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Estatura",tint = Color(0xFFBEA314))
+                    Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Estatura",tint = Color(0xFFFFBF33))
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF2C2B30),
@@ -980,7 +988,7 @@ fun CreateAccountContent() {
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Email, contentDescription = "Icono de Email",tint = Color(0xFFBEA314))
+                Icon(imageVector = Icons.Default.Email, contentDescription = "Icono de Email",tint = Color(0xFFFFBF33))
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
@@ -1011,7 +1019,7 @@ fun CreateAccountContent() {
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Lock, contentDescription = "Icono de candado",tint = Color(0xFFBEA314))
+                Icon(imageVector = Icons.Default.Lock, contentDescription = "Icono de candado",tint = Color(0xFFFFBF33))
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),

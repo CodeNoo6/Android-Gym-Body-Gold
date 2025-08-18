@@ -11,7 +11,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gimomagic.gymbodygold.ui.screens.loginScreens.LoginScreens
 import com.gimomagic.gymbodygold.ui.screens.OnBoardingScreen
+import com.gimomagic.gymbodygold.ui.screens.loginScreens.forgotPasswordScreen.ForgotPasswordScreen
 import com.gimomagic.gymbodygold.ui.theme.GymBodyGoldTheme
+import com.gimomagic.gymbodygold.ui.screens.loginScreens.forgotPasswordScreen.VerificationScreen
+import com.gimomagic.gymbodygold.ui.screens.loginScreens.forgotPasswordScreen.RessetPasswordScreen
+import com.gimomagic.gymbodygold.ui.screens.loginScreens.forgotPasswordScreen.PasswordSuccessScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +53,54 @@ fun AppNavigation() {
             )
         }
         composable("login") {
-            LoginScreens()
+            LoginScreens(
+                onForgotPasswordClick = {
+                    navController.navigate("forgot_password")
+                }
+            )
+
         }
+        composable("forgot_password") {
+            ForgotPasswordScreen(
+                onBack = { navController.popBackStack() },
+                onVerify = { email ->
+                    // 👉 Aquí navegamos a VerificationScreen
+                    navController.navigate("verification/$email")
+                }
+            )
+        }
+        composable("verification/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            VerificationScreen(
+                email = email,
+                onBack = { navController.popBackStack() },
+                onVerify = {
+                    navController.navigate("reset_password")
+                }
+            )
+        }
+
+
+        composable("reset_password") {
+            RessetPasswordScreen(
+                onBack = { navController.popBackStack() },
+                onPasswordReset = {
+                    navController.navigate("password_success") {
+                        popUpTo("reset_password") { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable("password_success") {
+            PasswordSuccessScreen(
+                onBack = { navController.popBackStack() },
+                onContinue = {
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
+
     }
 }
