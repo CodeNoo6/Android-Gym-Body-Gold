@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "701973922104",
+    "project_id": "gym-administrator-fc69d",
+    "storage_bucket": "gym-administrator-fc69d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:701973922104:android:3f442a15c21bb37d8701cd",
+        "android_client_info": {
+          "package_name": "com.gimomagic.gymbodygold"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzDadVFFqGz6U4mxyYXDkWCserOUQlg-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

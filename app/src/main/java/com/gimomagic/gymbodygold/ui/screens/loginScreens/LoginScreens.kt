@@ -1,6 +1,7 @@
 package com.gimomagic.gymbodygold.ui.screens.loginScreens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -33,30 +34,78 @@ import androidx.compose.ui.unit.sp
 import com.gimomagic.gymbodygold.ui.theme.GymBodyGoldTheme
 import java.text.SimpleDateFormat
 import java.util.*
-
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButton
 import androidx.compose.ui.text.input.VisualTransformation
-
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.text.style.TextAlign
-
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.material3.Icon
-
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.painterResource
+import com.gimomagic.gymbodygold.R
+import android.util.Patterns
+import android.view.Gravity
+import android.widget.Toast
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
+import com.gimomagic.gymbodygold.auth.AuthViewModel
+import com.gimomagic.gymbodygold.auth.AuthState
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalContext
+
 
 @Composable
+fun ShowCenteredToast(message: String) {
+    val context = LocalContext.current
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).apply {
+        setGravity(Gravity.CENTER, 0, 0)
+        show()
+    }
+}
+@Composable
 fun LoginScreens(
-    onForgotPasswordClick: () -> Unit = {}
+    authViewModel: AuthViewModel = viewModel(), // Agregar ViewModel
+    onForgotPasswordClick: () -> Unit = {},
+    onLoginSuccess: () -> Unit = {} // Callback para navegación exitosa
 ) {
     var isLoginScreen by remember { mutableStateOf(true) }
 
+    // Observar estados de Firebase Auth
+    val authState by authViewModel.authState.observeAsState()
+    val loading by authViewModel.loading.observeAsState(false)
+    val error by authViewModel.error.observeAsState()
+    val context = LocalContext.current
+
+
+    // Manejar el éxito del login
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
+            onLoginSuccess() // Navegar a pantalla principal
+        }
+    }
+
+    LaunchedEffect(error) {
+        error?.let { errorMessage ->
+            ShowCenteredToast(errorMessage)
+            authViewModel.clearError()
+        }
+    }
+
+    Scaffold() { padding ->
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -68,21 +117,85 @@ fun LoginScreens(
                 .padding(horizontal = 24.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Títulos y pestañas
+            // Tu logo actual (sin cambios)
             Spacer(modifier = Modifier.height(30.dp))
+            Box(
+                modifier = Modifier
+                    .size(180.dp) // Halo más grande
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFBF33).copy(alpha = 0.6f), // Centro más brillante
+                                Color(0xFFFFBF33).copy(alpha = 0.3f), // Capa media
+                                Color(0xFFFFBF33).copy(alpha = 0.1f), // Capa externa suave
+                                Color.Transparent
+                            ),
+                            radius = 180f
+                        ),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                // Círculo intermedio para más profundidad
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFFFFBF33).copy(alpha = 0.8f),
+                                    Color(0xFFFFBF33).copy(alpha = 0.4f),
+                                    Color.Transparent
+                                ),
+                                radius = 140f
+                            ),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFD700),
+                                        Color(0xFFFFBF33),
+                                    ),
+                                    radius = 60f
+                                ),
+                                shape = CircleShape
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = Color(0xFFB8860B),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Gym Body Gold Logo",
+                            modifier = Modifier
+                                .size(115.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+                }
+            }
             Text(
-                text = if (isLoginScreen) "Gym Body Gold" else "Crear Cuenta",
-                fontSize = 28.sp,
+                text = "Gym Body Gold",
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color(0xFFFFBF33)
             )
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = if (isLoginScreen) "Bienvenido de vuelta" else "",
+                text = if (isLoginScreen) "Bienvenido de vuelta" else "Crear Cuenta",
                 fontSize = 16.sp,
-                color = Color.LightGray
+                color = Color(0xFFFFBF33)
             )
             Spacer(modifier = Modifier.height(16.dp))
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,7 +210,7 @@ fun LoginScreens(
                         .padding(4.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLoginScreen) Color(0xFFBEA314) else Color.Transparent,
+                        containerColor = if (isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
                         contentColor = if (isLoginScreen) Color.Black else Color.White
                     )
                 ) {
@@ -110,7 +223,7 @@ fun LoginScreens(
                         .padding(4.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isLoginScreen) Color(0xFFBEA314) else Color.Transparent,
+                        containerColor = if (!isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
                         contentColor = if (!isLoginScreen) Color.Black else Color.White
                     ),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
@@ -122,241 +235,434 @@ fun LoginScreens(
             Spacer(modifier = Modifier.height(32.dp))
 
             if (isLoginScreen) {
-                LoginContent(
-                    onForgotPasswordClick = onForgotPasswordClick // PARÁMETRO PASADO
+                LoginContentWithFirebase(
+                    authViewModel = authViewModel,
+                    loading = loading,
+                    onForgotPasswordClick = onForgotPasswordClick
                 )
             } else {
-                CreateAccountContent()
+                /*CreateAccountContentWithFirebase(
+                    authViewModel = authViewModel,
+                    loading = loading
+                )*/
             }
         }
     }
 }
+}
 
 @Composable
-fun LoginContent(
+fun LoginContentWithFirebase(
+    authViewModel: AuthViewModel,
+    loading: Boolean,
     onForgotPasswordClick: () -> Unit = {}
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
-    val goldColor = Color(0xFFBEA314)
+    var passwordVisible by remember { mutableStateOf(false) }
+    val goldColor = Color(0xFFFFBF33)
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Email Field
+        // Email Field (sin cambios)
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Email", color = Color(0xFFFFBF33)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            placeholder = { Text("Email", color = Color.Gray) },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Email, "Icono de email",tint = Color(0xFFBEA314))
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = "Email",
+                    tint = goldColor,
+                    modifier = Modifier.size(20.dp)
+                )
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
                 unfocusedContainerColor = Color(0xFF2C2B30),
-                disabledContainerColor = Color(0xFF2C2B30),
                 focusedBorderColor = goldColor,
-                unfocusedBorderColor = goldColor,
+                unfocusedBorderColor = goldColor.copy(alpha = 0.5f),
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
+                cursorColor = goldColor,
                 focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
-                focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
+                unfocusedPlaceholderColor = Color.Gray
             )
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Field
+        // Password Field (sin cambios)
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Contraseña", color = Color(0xFFFFBF33)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            placeholder = { Text("Contraseña", color = Color.Gray) },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(16.dp),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Lock, contentDescription = "Icono de candado",tint = Color(0xFFBEA314))
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Password",
+                    tint = goldColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible }
+                ) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                        tint = goldColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
                 unfocusedContainerColor = Color(0xFF2C2B30),
-                disabledContainerColor = Color(0xFF2C2B30),
                 focusedBorderColor = goldColor,
-                unfocusedBorderColor = goldColor,
+                unfocusedBorderColor = goldColor.copy(alpha = 0.5f),
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
+                cursorColor = goldColor,
                 focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
-                focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
+                unfocusedPlaceholderColor = Color.Gray
             )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Login Button
+        // Login Button - MODIFICADO PARA FIREBASE
         Button(
-            onClick = { /* Handle login click */ },
+            onClick = {
+                if (email.isNotBlank() && password.isNotBlank()) {
+                    authViewModel.signIn(email, password) // Usar Firebase
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFBEA314),
+                containerColor = goldColor,
                 contentColor = Color.Black
             ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 8.dp
+            ),
+            enabled = !loading && email.isNotBlank() && password.isNotBlank()
         ) {
-            Text(text = "Iniciar Sesión", fontSize = 18.sp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.Black
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Iniciando...",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Iniciar Sesión",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Forgot Password Link
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Forgot Password Link (sin cambios)
         Text(
             text = "¿Olvidaste tu contraseña?",
-            color = Color.LightGray,
+            color = goldColor.copy(alpha = 0.8f),
             fontSize = 14.sp,
-            textDecoration = TextDecoration.Underline,
-            modifier = Modifier.clickable {
-                onForgotPasswordClick() // Esto debe ejecutar la navegación
-            }
+            modifier = Modifier
+                .clickable {
+                    onForgotPasswordClick()
+                }
+                .padding(vertical = 8.dp),
+            textDecoration = TextDecoration.Underline
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateAccountContent() {
+    // Estados del formulario
     var documentTypeExpanded by remember { mutableStateOf(false) }
     val documentTypes = listOf("CC", "TI", "CE", "Pasaporte")
     var selectedDocumentType by remember { mutableStateOf(documentTypes[0]) }
-
     var documentNumber by rememberSaveable { mutableStateOf("") }
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var confirmPassword by rememberSaveable { mutableStateOf("") }
     var age by rememberSaveable { mutableStateOf("") }
     var weight by rememberSaveable { mutableStateOf("") }
     var height by rememberSaveable { mutableStateOf("") }
     var phone by rememberSaveable { mutableStateOf("") }
     var address by rememberSaveable { mutableStateOf("") }
-
     var selectedGender by rememberSaveable { mutableStateOf("") }
-    val goldColor = Color(0xFFBEA314)
-    val calendar = remember { Calendar.getInstance() }
+    var birthDate by remember { mutableStateOf("") }
 
-    // Estados para errores de validación
+    // Estados de validación
     var documentError by remember { mutableStateOf("") }
     var nameError by remember { mutableStateOf("") }
     var lastNameError by remember { mutableStateOf("") }
     var usernameError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
+    var confirmPasswordError by remember { mutableStateOf("") }
     var phoneError by remember { mutableStateOf("") }
-    var ageError by remember { mutableStateOf("") }
-    var weightError by remember { mutableStateOf("") }
-    var heightError by remember { mutableStateOf("") }
+    var birthDateError by remember { mutableStateOf("") }
+    var genderError by remember { mutableStateOf("") }
 
-    // Estado para controlar el scroll automático
+    // Estados adicionales
+    var showDatePicker by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var isFormSubmitting by remember { mutableStateOf(false) }
+
+    val goldColor = Color(0xFFFFBF33)
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
 
-    var birthDate by remember { mutableStateOf("") }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-    var selectedDateMillis by remember { mutableStateOf<Long?>(null) }
-
-    var showApplicationDatePicker by remember { mutableStateOf(false) }
-    val applicationDatePickerState = rememberDatePickerState()
-    var applicationDate by remember { mutableStateOf("") }
-    // Funciones de validación
+    // FUNCIONES DE VALIDACIÓN
     fun validateDocumentNumber(number: String, type: String): String {
         return when (type) {
             "CC", "TI", "CE" -> {
-                if (number.isEmpty()) "Campo obligatorio"
-                else if (!number.all { it.isDigit() }) "Solo se permiten números"
-                else if (number.length < 7) "Mínimo 7 dígitos"
-                else ""
+                when {
+                    number.isEmpty() -> "Campo obligatorio"
+                    !number.all { it.isDigit() } -> "Solo se permiten números"
+                    number.length < 7 -> "Mínimo 7 dígitos"
+                    else -> ""
+                }
             }
             "Pasaporte" -> {
-                if (number.isEmpty()) "Campo obligatorio"
-                else if (number.length < 6) "Mínimo 6 caracteres"
-                else ""
+                when {
+                    number.isEmpty() -> "Campo obligatorio"
+                    number.length < 6 -> "Mínimo 6 caracteres"
+                    else -> ""
+                }
             }
             else -> ""
         }
     }
 
-    fun formatDate(millis: Long?): String {
-        return if (millis != null) {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = millis
-            String.format(
-                "%02d/%02d/%04d",
-                calendar.get(Calendar.DAY_OF_MONTH),
-                calendar.get(Calendar.MONTH) + 1,
-                calendar.get(Calendar.YEAR)
-            )
-        } else {
-            ""
-        }
-    }
     fun validateName(name: String): String {
-        return if (name.isEmpty()) "Campo obligatorio"
-        else if (!name.all { it.isLetter() || it.isWhitespace() }) "Solo se permiten letras"
-        else if (name.trim().length < 2) "Mínimo 2 caracteres"
-        else ""
+        return when {
+            name.isEmpty() -> "Campo obligatorio"
+            !name.all { it.isLetter() || it.isWhitespace() } -> "Solo se permiten letras"
+            name.trim().length < 2 -> "Mínimo 2 caracteres"
+            else -> ""
+        }
     }
 
     fun validateUsername(username: String): String {
-        return if (username.isEmpty()) "Campo obligatorio"
-        else if (username.length < 3) "Mínimo 3 caracteres"
-        else if (!username.all { it.isLetterOrDigit() || it == '_' || it == '.' }) "Solo letras, números, _ y ."
-        else ""
+        return when {
+            username.isEmpty() -> "Campo obligatorio"
+            username.length < 3 -> "Mínimo 3 caracteres"
+            !username.all { it.isLetterOrDigit() || it == '_' || it == '.' } -> "Solo letras, números, _ y ."
+            else -> ""
+        }
     }
 
     fun validateEmail(email: String): String {
-        return if (email.isEmpty()) "Campo obligatorio"
-        else if (!email.contains("@")) "Debe contener @"
-        else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) "Email inválido"
-        else ""
+        return when {
+            email.isEmpty() -> "Campo obligatorio"
+            !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Email inválido"
+            else -> ""
+        }
     }
 
     fun validatePassword(password: String): String {
-        return if (password.isEmpty()) "Campo obligatorio"
-        else if (password.length < 6) "Mínimo 6 caracteres"
-        else ""
+        return when {
+            password.isEmpty() -> "Campo obligatorio"
+            password.length < 6 -> "Mínimo 6 caracteres"
+            !password.any { it.isUpperCase() } -> "Debe contener una mayúscula"
+            !password.any { it.isLowerCase() } -> "Debe contener una minúscula"
+            !password.any { it.isDigit() } -> "Debe contener un número"
+            else -> ""
+        }
+    }
+
+    fun validatePasswordConfirmation(password: String, confirmation: String): String {
+        return when {
+            confirmation.isEmpty() -> "Campo obligatorio"
+            password != confirmation -> "Las contraseñas no coinciden"
+            else -> ""
+        }
     }
 
     fun validatePhone(phone: String): String {
-        return if (phone.isEmpty()) "Campo obligatorio"
-        else if (!phone.all { it.isDigit() || it == '+' || it == '-' || it == '(' || it == ')' || it.isWhitespace() }) "Formato de teléfono inválido"
-        else if (phone.replace(Regex("[^\\d]"), "").length < 7) "Mínimo 7 dígitos"
-        else ""
+        val digits = phone.replace(Regex("[^\\d]"), "")
+        return when {
+            phone.isEmpty() -> "Campo obligatorio"
+            digits.length < 7 -> "Mínimo 7 dígitos"
+            else -> ""
+        }
     }
 
-    fun validateNumber(value: String, fieldName: String, min: Int? = null, max: Int? = null): String {
-        return if (value.isNotEmpty()) {
-            if (!value.all { it.isDigit() }) "Solo números"
-            else {
-                val number = value.toIntOrNull()
+    fun calculateAge(birthDateStr: String): Int {
+        val today = Calendar.getInstance()
+        val parts = birthDateStr.split("/")
+        if (parts.size != 3) return 0
+
+        val birthDate = Calendar.getInstance()
+        birthDate.set(
+            parts[2].toInt(), // año
+            parts[1].toInt() - 1, // mes (0-11)
+            parts[0].toInt() // día
+        )
+
+        var age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR)
+        if (today.get(Calendar.DAY_OF_YEAR) < birthDate.get(Calendar.DAY_OF_YEAR)) {
+            age--
+        }
+        return age
+    }
+
+    fun validateBirthDate(birthDate: String): String {
+        return if (birthDate.isEmpty()) {
+            "Campo obligatorio"
+        } else {
+            try {
+                val age = calculateAge(birthDate)
                 when {
-                    number == null -> "Número inválido"
-                    min != null && number < min -> "Mínimo $min"
-                    max != null && number > max -> "Máximo $max"
+                    age < 14 -> "Debe ser mayor de 14 años"
+                    age > 120 -> "Edad no válida"
                     else -> ""
                 }
+            } catch (e: Exception) {
+                "Fecha inválida"
             }
-        } else ""
+        }
+    }
+
+    // Función para validar en tiempo real
+    fun validateField(field: String, value: String) {
+        when (field) {
+            "documentNumber" -> documentError = validateDocumentNumber(value, selectedDocumentType)
+            "firstName" -> nameError = validateName(value)
+            "lastName" -> lastNameError = validateName(value)
+            "username" -> usernameError = validateUsername(value)
+            "email" -> emailError = validateEmail(value)
+            "password" -> {
+                passwordError = validatePassword(value)
+                if (confirmPassword.isNotEmpty()) {
+                    confirmPasswordError = validatePasswordConfirmation(value, confirmPassword)
+                }
+            }
+            "confirmPassword" -> confirmPasswordError = validatePasswordConfirmation(password, value)
+            "phone" -> phoneError = validatePhone(value)
+            "birthDate" -> birthDateError = validateBirthDate(value)
+        }
+    }
+
+    // Función para validar todo el formulario
+    fun validateCompleteForm(): Boolean {
+        genderError = if (selectedGender.isEmpty()) "Debe seleccionar un género" else ""
+
+        validateField("documentNumber", documentNumber)
+        validateField("firstName", firstName)
+        validateField("lastName", lastName)
+        validateField("username", username)
+        validateField("email", email)
+        validateField("password", password)
+        validateField("confirmPassword", confirmPassword)
+        validateField("phone", phone)
+        validateField("birthDate", birthDate)
+
+        val hasErrors = listOf(
+            documentError, nameError, lastNameError, usernameError,
+            emailError, passwordError, confirmPasswordError, phoneError,
+            birthDateError, genderError
+        ).any { it.isNotEmpty() }
+
+        return !hasErrors
+    }
+
+    // Función para manejar el envío del formulario
+    fun handleFormSubmission() {
+        isFormSubmitting = true
+
+        if (validateCompleteForm()) {
+            coroutineScope.launch {
+                try {
+                    // Simular envío
+                    delay(2000)
+
+                    // Datos para enviar
+                    val userData = mapOf(
+                        "tipoDocumento" to selectedDocumentType,
+                        "numeroDocumento" to documentNumber,
+                        "nombre" to firstName,
+                        "apellido" to lastName,
+                        "nombreUsuario" to username,
+                        "email" to email,
+                        "password" to password,
+                        "telefono" to phone,
+                        "genero" to selectedGender,
+                        "fechaNacimiento" to birthDate,
+                        "edad" to age,
+                        "peso" to weight,
+                        "estatura" to height,
+                        "direccion" to address
+                    )
+
+                    println("Datos válidos para enviar: $userData")
+                    // TODO: Aquí puedes hacer la llamada a tu API
+                    // val response = apiService.registerUser(userData)
+
+                } catch (e: Exception) {
+                    println("Error al registrar: ${e.message}")
+                } finally {
+                    isFormSubmitting = false
+                }
+            }
+        } else {
+            isFormSubmitting = false
+            // Hacer scroll al principio para ver errores
+            coroutineScope.launch {
+                scrollState.animateScrollTo(0)
+            }
+        }
     }
 
     Column(
@@ -365,8 +671,8 @@ fun CreateAccountContent() {
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Sección de Información de Documento
-        Text(text = "Información de Documento", color = Color(0xFFBEA314), fontSize = 14.sp,textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth() )
+        // INFORMACIÓN DE DOCUMENTO
+        Text(text = "Información de Documento", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
         // Tipo de Documento
@@ -382,24 +688,17 @@ fun CreateAccountContent() {
                 label = { Text("Tipo de Documento", color = Color.Gray) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = documentTypeExpanded) },
                 leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de documento",tint = Color(0xFFFFBF33))
+                    Icon(imageVector = Icons.Default.Person, contentDescription = "Documento", tint = goldColor)
                 },
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().menuAnchor(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF2C2B30),
                     unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
                     focusedBorderColor = goldColor,
                     unfocusedBorderColor = goldColor,
                     focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray
+                    unfocusedTextColor = Color.White
                 )
             )
             ExposedDropdownMenu(
@@ -413,210 +712,85 @@ fun CreateAccountContent() {
                         onClick = {
                             selectedDocumentType = type
                             documentTypeExpanded = false
-                            // Revalidar número de documento cuando cambie el tipo
-                            documentError = validateDocumentNumber(documentNumber, type)
-                        },
-                        modifier = Modifier.background(Color(0xFF2C2B30))
+                            validateField("documentNumber", documentNumber)
+                        }
                     )
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Número de Documento
-        Column {
-            OutlinedTextField(
-                value = documentNumber,
-                onValueChange = { newValue ->
-                    // Filtrar entrada según tipo de documento
-                    val filteredValue = when (selectedDocumentType) {
-                        "CC", "TI", "CE" -> newValue.filter { it.isDigit() }
-                        "Pasaporte" -> newValue.filter { it.isLetterOrDigit() }
-                        else -> newValue
-                    }
-                    documentNumber = filteredValue
-                    documentError = validateDocumentNumber(filteredValue, selectedDocumentType)
-                },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de documento",tint = Color(0xFFBEA314))
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Número de Documento", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = if (selectedDocumentType in listOf("CC", "TI", "CE")) KeyboardType.Number else KeyboardType.Text
-                ),
-                isError = documentError.isNotEmpty(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (documentError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (documentError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (documentError.isNotEmpty()) {
-                Text(
-                    text = documentError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
+        // Número de Documento CON VALIDACIÓN
+        ValidatedTextField(
+            value = documentNumber,
+            onValueChange = { newValue ->
+                val filteredValue = when (selectedDocumentType) {
+                    "CC", "TI", "CE" -> newValue.filter { it.isDigit() }
+                    "Pasaporte" -> newValue.filter { it.isLetterOrDigit() }
+                    else -> newValue
+                }
+                documentNumber = filteredValue
+                validateField("documentNumber", filteredValue)
+            },
+            label = "Número de Documento",
+            leadingIcon = Icons.Default.Create,
+            errorMessage = documentError,
+            keyboardType = if (selectedDocumentType in listOf("CC", "TI", "CE")) KeyboardType.Number else KeyboardType.Text,
+            goldColor = goldColor
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sección de Información Personal
-        Text(text = "Información Personal", color = Color(0xFFBEA314), fontSize = 14.sp,textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+        // INFORMACIÓN PERSONAL
+        Text(text = "Información Personal", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nombre
-        Column {
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { newValue ->
-                    val filteredValue = newValue.filter { it.isLetter() || it.isWhitespace() }
-                    firstName = filteredValue
-                    nameError = validateName(filteredValue)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Nombre", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                isError = nameError.isNotEmpty(),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de Persona",tint = Color(0xFFBEA314))
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (nameError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (nameError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (nameError.isNotEmpty()) {
-                Text(
-                    text = nameError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
+        // Nombre CON VALIDACIÓN
+        ValidatedTextField(
+            value = firstName,
+            onValueChange = { newValue ->
+                val filteredValue = newValue.filter { it.isLetter() || it.isWhitespace() }
+                firstName = filteredValue
+                validateField("firstName", filteredValue)
+            },
+            label = "Nombre",
+            leadingIcon = Icons.Default.Person,
+            errorMessage = nameError,
+            goldColor = goldColor
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Apellido
-        Column {
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { newValue ->
-                    val filteredValue = newValue.filter { it.isLetter() || it.isWhitespace() }
-                    lastName = filteredValue
-                    lastNameError = validateName(filteredValue)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Apellido", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                isError = lastNameError.isNotEmpty(),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Person, contentDescription = "Icono de Persona",tint = Color(0xFFFFBF33))
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (lastNameError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (lastNameError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (lastNameError.isNotEmpty()) {
-                Text(
-                    text = lastNameError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
+        // Apellido CON VALIDACIÓN
+        ValidatedTextField(
+            value = lastName,
+            onValueChange = { newValue ->
+                val filteredValue = newValue.filter { it.isLetter() || it.isWhitespace() }
+                lastName = filteredValue
+                validateField("lastName", filteredValue)
+            },
+            label = "Apellido",
+            leadingIcon = Icons.Default.Person,
+            errorMessage = lastNameError,
+            goldColor = goldColor
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nombre de Usuario
-        Column {
-            OutlinedTextField(
-                value = username,
-                onValueChange = { newValue ->
-                    val filteredValue = newValue.filter { it.isLetterOrDigit() || it == '_' || it == '.' }
-                    username = filteredValue
-                    usernameError = validateUsername(filteredValue)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Nombre de Usuario", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                isError = usernameError.isNotEmpty(),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.AccountCircle, contentDescription = "Icono de Usuario",tint = Color(0xFFFFBF33))
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (usernameError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (usernameError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (usernameError.isNotEmpty()) {
-                Text(
-                    text = usernameError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
+        // Nombre de Usuario CON VALIDACIÓN
+        ValidatedTextField(
+            value = username,
+            onValueChange = { newValue ->
+                val filteredValue = newValue.filter { it.isLetterOrDigit() || it == '_' || it == '.' }
+                username = filteredValue
+                validateField("username", filteredValue)
+            },
+            label = "Nombre de Usuario",
+            leadingIcon = Icons.Default.AccountCircle,
+            errorMessage = usernameError,
+            goldColor = goldColor
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Fecha de Nacimiento
+        // Fecha de Nacimiento CON VALIDACIÓN
         OutlinedTextField(
             value = birthDate,
             onValueChange = { },
@@ -625,183 +799,128 @@ fun CreateAccountContent() {
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
             label = { Text("Fecha de Nacimiento", color = Color.Gray) },
+            placeholder = { Text("Selecciona tu fecha de nacimiento", color = Color.Gray) },
             shape = RoundedCornerShape(12.dp),
+            isError = birthDateError.isNotEmpty(),
             leadingIcon = {
+                Icon(imageVector = Icons.Default.DateRange, contentDescription = "Fecha", tint = goldColor)
+            },
+            trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.DateRange,
-                    contentDescription = "Icono de Fecha",
-                    tint = Color(0xFFBEA314)
+                    contentDescription = "Seleccionar fecha",
+                    tint = goldColor.copy(alpha = 0.7f),
+                    modifier = Modifier.clickable { showDatePicker = true }
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
                 unfocusedContainerColor = Color(0xFF2C2B30),
                 disabledContainerColor = Color(0xFF2C2B30),
-                focusedBorderColor = Color(0xFFBEA314),
-                unfocusedBorderColor = Color(0xFFBEA314),
+                focusedBorderColor = if (birthDateError.isNotEmpty()) Color.Red else goldColor,
+                unfocusedBorderColor = if (birthDateError.isNotEmpty()) Color.Red else goldColor,
+                disabledBorderColor = if (birthDateError.isNotEmpty()) Color.Red else goldColor,
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
-                focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
+                disabledTextColor = Color.White,
                 focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
+                unfocusedLabelColor = Color.Gray,
+                disabledLabelColor = Color.Gray
             )
         )
-
-        // Selector de fecha
-        if (showDatePicker) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showApplicationDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            applicationDate = formatDate(applicationDatePickerState.selectedDateMillis)
-                        }
-                    ) {
-                        Text("Confirmar")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showApplicationDatePicker = false }
-                    ) {
-                        Text("Cancelar")
-                    }
-                }
-            ) {
-                DatePicker(
-                    state = applicationDatePickerState,
-                    colors = DatePickerDefaults.colors(
-                        selectedDayContainerColor = Color(0xFF08CAF7),
-                        todayContentColor = Color(0xFF08CAF7),
-                        todayDateBorderColor = Color(0xFF08CAF7)
-                    )
-                )
-            }
+        if (birthDateError.isNotEmpty()) {
+            Text(
+                text = birthDateError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
         }
 
-        // Selector de hora
-        if (showTimePicker) {
-            val timeState = rememberTimePickerState()
-            AlertDialog(
-                onDismissRequest = { showTimePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            selectedDateMillis?.let { dateMillis ->
-                                val cal = Calendar.getInstance()
-                                cal.timeInMillis = dateMillis
-                                cal.set(Calendar.HOUR_OF_DAY, timeState.hour)
-                                cal.set(Calendar.MINUTE, timeState.minute)
-                                birthDate = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-                                    .format(cal.time)
-                            }
-                            showTimePicker = false
-                        }
-                    ) { Text("OK") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
-                },
-                text = {
-                    TimePicker(state = timeState)
+        // Mostrar edad calculada si hay fecha de nacimiento
+        if (birthDate.isNotEmpty() && age.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = goldColor.copy(alpha = 0.1f)
+                    )
+                ) {
+                    Text(
+                        text = "Edad: $age años",
+                        color = goldColor,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
-            )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Sección de Género
-        Text(
-            text = "Género",
-            color = Color(0xFFBEA314),
-            fontSize = 14.sp,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 1
-        )
+        // Género CON VALIDACIÓN
+        Text(text = "Género", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+        if (genderError.isNotEmpty()) {
+            Text(
+                text = genderError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 0.dp, top = 4.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(50.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             GenderButton(
                 text = "Masculino",
                 isSelected = selectedGender == "Masculino",
                 onClick = {
                     selectedGender = "Masculino"
-                    coroutineScope.launch {
-                        delay(50)
-                        scrollState.animateScrollTo(scrollState.value + 400)
-                    }
-                }
+                    genderError = ""
+                },
+                modifier = Modifier.weight(1f)
             )
             GenderButton(
                 text = "Femenino",
                 isSelected = selectedGender == "Femenino",
                 onClick = {
                     selectedGender = "Femenino"
-                    coroutineScope.launch {
-                        delay(50)
-                        scrollState.animateScrollTo(scrollState.value + 400)
-                    }
-                }
+                    genderError = ""
+                },
+                modifier = Modifier.weight(1f)
             )
         }
+
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sección de Información de Contacto
-        Text(text = "Información de Contacto", color = Color(0xFFBEA314), fontSize = 14.sp,textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+        // INFORMACIÓN DE CONTACTO
+        Text(text = "Información de Contacto", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Teléfono
-        Column {
-            OutlinedTextField(
-                value = phone,
-                onValueChange = { newValue ->
-                    phone = newValue
-                    phoneError = validatePhone(newValue)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Teléfono", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                isError = phoneError.isNotEmpty(),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Phone, contentDescription = "Icono de telefono",tint = Color(0xFFFFBF33))
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (phoneError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (phoneError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (phoneError.isNotEmpty()) {
-                Text(
-                    text = phoneError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
+        // Teléfono CON VALIDACIÓN
+        ValidatedTextField(
+            value = phone,
+            onValueChange = { newValue ->
+                phone = newValue
+                validateField("phone", newValue)
+            },
+            label = "Teléfono",
+            leadingIcon = Icons.Default.Phone,
+            errorMessage = phoneError,
+            keyboardType = KeyboardType.Phone,
+            goldColor = goldColor
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Dirección
+        // Dirección (opcional)
         OutlinedTextField(
             value = address,
             onValueChange = { address = it },
@@ -810,278 +929,400 @@ fun CreateAccountContent() {
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             leadingIcon = {
-                Icon(imageVector = Icons.Default.Home, contentDescription = "Icono de dirección",tint = Color(0xFFFFBF33))
+                Icon(imageVector = Icons.Default.Home, contentDescription = "Dirección", tint = goldColor)
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color(0xFF2C2B30),
                 unfocusedContainerColor = Color(0xFF2C2B30),
-                disabledContainerColor = Color(0xFF2C2B30),
                 focusedBorderColor = goldColor,
                 unfocusedBorderColor = goldColor,
                 focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
-                focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
-                focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
+                unfocusedTextColor = Color.White
             )
         )
+
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sección de Información Física
-        Text(text = "Información Física (Opcional)", color = Color(0xFFBEA314), fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+        // INFORMACIÓN FÍSICA (OPCIONAL)
+        Text(text = "Información Física (Opcional)", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Edad, Peso
+        // Peso y Estatura en fila (sin edad manual)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 OutlinedTextField(
-                    value = age,
-                    onValueChange = { newValue ->
-                        val filteredValue = newValue.filter { it.isDigit() }
-                        age = filteredValue
-                        ageError = validateNumber(filteredValue, "Edad", 1, 120)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Edad", color = Color.Gray) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = ageError.isNotEmpty(),
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Face, contentDescription = "Icono de Edad",tint = Color(0xFFBEA314))
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF2C2B30),
-                        unfocusedContainerColor = Color(0xFF2C2B30),
-                        disabledContainerColor = Color(0xFF2C2B30),
-                        focusedBorderColor = if (ageError.isNotEmpty()) Color.Red else goldColor,
-                        unfocusedBorderColor = if (ageError.isNotEmpty()) Color.Red else goldColor,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedPlaceholderColor = Color.Gray,
-                        unfocusedPlaceholderColor = Color.Gray,
-                        focusedLabelColor = Color.Gray,
-                        unfocusedLabelColor = Color.Gray,
-                        errorBorderColor = Color.Red,
-                        errorLabelColor = Color.Red
-                    )
-                )
-                if (ageError.isNotEmpty()) {
-                    Text(
-                        text = ageError,
-                        color = Color.Red,
-                        fontSize = 10.sp,
-                        modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(
                     value = weight,
                     onValueChange = { newValue ->
                         val filteredValue = newValue.filter { it.isDigit() }
                         weight = filteredValue
-                        weightError = validateNumber(filteredValue, "Peso", 20, 300)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Peso (kg)", color = Color.Gray) },
+                    placeholder = { Text("Ej: 70", color = Color.Gray) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    isError = weightError.isNotEmpty(),
                     leadingIcon = {
-                        Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Peso",tint = Color(0xFFFFBF33))
+                        Icon(imageVector = Icons.Default.Create, contentDescription = "Peso", tint = goldColor)
                     },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFF2C2B30),
                         unfocusedContainerColor = Color(0xFF2C2B30),
-                        disabledContainerColor = Color(0xFF2C2B30),
-                        focusedBorderColor = if (weightError.isNotEmpty()) Color.Red else goldColor,
-                        unfocusedBorderColor = if (weightError.isNotEmpty()) Color.Red else goldColor,
+                        focusedBorderColor = goldColor,
+                        unfocusedBorderColor = goldColor,
                         focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color.White,
-                        focusedPlaceholderColor = Color.Gray,
-                        unfocusedPlaceholderColor = Color.Gray,
-                        focusedLabelColor = Color.Gray,
-                        unfocusedLabelColor = Color.Gray,
-                        errorBorderColor = Color.Red,
-                        errorLabelColor = Color.Red
+                        unfocusedTextColor = Color.White
                     )
                 )
-                if (weightError.isNotEmpty()) {
-                    Text(
-                        text = weightError,
-                        color = Color.Red,
-                        fontSize = 10.sp,
-                        modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                OutlinedTextField(
+                    value = height,
+                    onValueChange = { newValue ->
+                        val filteredValue = newValue.filter { it.isDigit() }
+                        height = filteredValue
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Estatura (cm)", color = Color.Gray) },
+                    placeholder = { Text("Ej: 175", color = Color.Gray) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Create, contentDescription = "Estatura", tint = goldColor)
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF2C2B30),
+                        unfocusedContainerColor = Color(0xFF2C2B30),
+                        focusedBorderColor = goldColor,
+                        unfocusedBorderColor = goldColor,
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
                     )
-                }
+                )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Estatura
-        Column {
-            OutlinedTextField(
-                value = height,
-                onValueChange = { newValue ->
-                    val filteredValue = newValue.filter { it.isDigit() }
-                    height = filteredValue
-                    heightError = validateNumber(filteredValue, "Estatura", 50, 250)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Estatura (cm)", color = Color.Gray) },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                isError = heightError.isNotEmpty(),
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Create, contentDescription = "Icono de Estatura",tint = Color(0xFFFFBF33))
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF2C2B30),
-                    unfocusedContainerColor = Color(0xFF2C2B30),
-                    disabledContainerColor = Color(0xFF2C2B30),
-                    focusedBorderColor = if (heightError.isNotEmpty()) Color.Red else goldColor,
-                    unfocusedBorderColor = if (heightError.isNotEmpty()) Color.Red else goldColor,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White,
-                    focusedPlaceholderColor = Color.Gray,
-                    unfocusedPlaceholderColor = Color.Gray,
-                    focusedLabelColor = Color.Gray,
-                    unfocusedLabelColor = Color.Gray,
-                    errorBorderColor = Color.Red,
-                    errorLabelColor = Color.Red
-                )
-            )
-            if (heightError.isNotEmpty()) {
-                Text(
-                    text = heightError,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
-                )
-            }
-        }
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Sección de Credenciales de Acceso
-        Text(text = "Credenciales de Acceso", color = Color(0xFFBEA314), fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
+        // CREDENCIALES DE ACCESO
+        Text(text = "Credenciales de Acceso", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
-        // Email
 
-        OutlinedTextField(
+        // Email CON VALIDACIÓN
+        ValidatedTextField(
             value = email,
-            onValueChange = { email = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Email", color = Color.Gray) },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Email, contentDescription = "Icono de Email",tint = Color(0xFFFFBF33))
+            onValueChange = { newValue ->
+                email = newValue
+                validateField("email", newValue)
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF2C2B30),
-                unfocusedContainerColor = Color(0xFF2C2B30),
-                disabledContainerColor = Color(0xFF2C2B30),
-                focusedBorderColor = goldColor,
-                unfocusedBorderColor = goldColor,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
-                focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
-                focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
-            )
+            label = "Email",
+            leadingIcon = Icons.Default.Email,
+            errorMessage = emailError,
+            keyboardType = KeyboardType.Email,
+            goldColor = goldColor
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Contraseña con visibilidad toggleable
-        var passwordVisible by remember { mutableStateOf(false) }
-        OutlinedTextField(
+        // Contraseña CON VALIDACIÓN
+        ValidatedPasswordField(
             value = password,
-            onValueChange = { password = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Contraseña", color = Color.Gray) },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Lock, contentDescription = "Icono de candado",tint = Color(0xFFFFBF33))
+            onValueChange = { newValue ->
+                password = newValue
+                validateField("password", newValue)
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF2C2B30),
-                unfocusedContainerColor = Color(0xFF2C2B30),
-                disabledContainerColor = Color(0xFF2C2B30),
-                focusedBorderColor = goldColor,
-                unfocusedBorderColor = goldColor,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                cursorColor = Color.White,
-                focusedPlaceholderColor = Color.Gray,
-                unfocusedPlaceholderColor = Color.Gray,
-                focusedLabelColor = Color.Gray,
-                unfocusedLabelColor = Color.Gray
-            )
+            label = "Contraseña",
+            errorMessage = passwordError,
+            isPasswordVisible = passwordVisible,
+            onTogglePasswordVisibility = { passwordVisible = !passwordVisible },
+            goldColor = goldColor
         )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Confirmar Contraseña CON VALIDACIÓN
+        ValidatedPasswordField(
+            value = confirmPassword,
+            onValueChange = { newValue ->
+                confirmPassword = newValue
+                validateField("confirmPassword", newValue)
+            },
+            label = "Confirmar Contraseña",
+            errorMessage = confirmPasswordError,
+            isPasswordVisible = confirmPasswordVisible,
+            onTogglePasswordVisibility = { confirmPasswordVisible = !confirmPasswordVisible },
+            goldColor = goldColor
+        )
+
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón de Crear Cuenta
+        // Botón de Crear Cuenta CON VALIDACIÓN
         Button(
-            onClick = { /* Handle create account click */ },
+            onClick = { handleFormSubmission() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
+            enabled = !isFormSubmitting,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFBEA314),
-                contentColor = Color.Black
-            ),
+                containerColor = goldColor,
+                contentColor = Color.Black,
+                disabledContainerColor = goldColor.copy(alpha = 0.6f)
+            )
         ) {
-            Text(text = "Crear Cuenta", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            if (isFormSubmitting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Creando cuenta...", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            } else {
+                Text(text = "Crear Cuenta", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
     }
+
+    // DatePicker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val calendar = Calendar.getInstance()
+                            calendar.timeInMillis = millis
+                            birthDate = String.format(
+                                "%02d/%02d/%04d",
+                                calendar.get(Calendar.DAY_OF_MONTH),
+                                calendar.get(Calendar.MONTH) + 1,
+                                calendar.get(Calendar.YEAR)
+                            )
+                            validateField("birthDate", birthDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Confirmar", color = goldColor)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDatePicker = false }
+                ) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = Color(0xFF2C2B30),
+            )
+        ) {
+            DatePicker(
+                state = datePickerState,
+                title = {
+                    Text(
+                        text = "Seleccionar fecha de nacimiento",
+                        color = Color.White,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                },
+                headline = {
+                    Text(
+                        text = datePickerState.selectedDateMillis?.let {
+                            val calendar = Calendar.getInstance()
+                            calendar.timeInMillis = it
+                            String.format(
+                                "%02d/%02d/%04d",
+                                calendar.get(Calendar.DAY_OF_MONTH),
+                                calendar.get(Calendar.MONTH) + 1,
+                                calendar.get(Calendar.YEAR)
+                            )
+                        } ?: "Fecha no seleccionada",
+                        color = goldColor,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                },
+                showModeToggle = false,
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color(0xFF2C2B30),
+                    titleContentColor = Color.White,
+                    headlineContentColor = goldColor,
+                    weekdayContentColor = Color.Gray,
+                    subheadContentColor = Color.Gray,
+                    navigationContentColor = goldColor,
+                    yearContentColor = Color.White,
+                    disabledYearContentColor = Color.Gray,
+                    currentYearContentColor = goldColor,
+                    selectedYearContentColor = Color.Black,
+                    selectedYearContainerColor = goldColor,
+                    dayContentColor = Color.White,
+                    disabledDayContentColor = Color.Gray,
+                    selectedDayContentColor = Color.Black,
+                    disabledSelectedDayContentColor = Color.Gray,
+                    selectedDayContainerColor = goldColor,
+                    disabledSelectedDayContainerColor = goldColor.copy(alpha = 0.3f),
+                    todayContentColor = goldColor,
+                    todayDateBorderColor = goldColor,
+                    dayInSelectionRangeContentColor = Color.White,
+                    dayInSelectionRangeContainerColor = goldColor.copy(alpha = 0.3f)
+                )
+            )
+        }
+    }
 }
 
-// Componente GenderButton (necesario para el funcionamiento)
+// COMPONENTES AUXILIARES PARA VALIDACIÓN
+@Composable
+fun ValidatedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    errorMessage: String,
+    goldColor: Color,
+    modifier: Modifier = Modifier,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Column {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier.fillMaxWidth(),
+            label = { Text(label, color = Color.Gray) },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            isError = errorMessage.isNotEmpty(),
+            leadingIcon = {
+                Icon(imageVector = leadingIcon, contentDescription = label, tint = goldColor)
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFF2C2B30),
+                unfocusedContainerColor = Color(0xFF2C2B30),
+                focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else goldColor,
+                unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else goldColor,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                cursorColor = Color.White,
+                focusedPlaceholderColor = Color.Gray,
+                unfocusedPlaceholderColor = Color.Gray,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Color.Gray,
+                errorBorderColor = Color.Red,
+                errorLabelColor = Color.Red
+            )
+        )
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ValidatedPasswordField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    errorMessage: String,
+    isPasswordVisible: Boolean,
+    onTogglePasswordVisibility: () -> Unit,
+    goldColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Column {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier.fillMaxWidth(),
+            label = { Text(label, color = Color.Gray) },
+            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            isError = errorMessage.isNotEmpty(),
+            leadingIcon = {
+                Icon(imageVector = Icons.Default.Lock, contentDescription = "Contraseña", tint = goldColor)
+            },
+            trailingIcon = {
+                IconButton(onClick = onTogglePasswordVisibility) {
+                    Icon(
+                        imageVector = if (isPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = if (isPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña",
+                        tint = goldColor.copy(alpha = 0.7f)
+                    )
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFF2C2B30),
+                unfocusedContainerColor = Color(0xFF2C2B30),
+                focusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else goldColor,
+                unfocusedBorderColor = if (errorMessage.isNotEmpty()) Color.Red else goldColor,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                cursorColor = Color.White,
+                focusedPlaceholderColor = Color.Gray,
+                unfocusedPlaceholderColor = Color.Gray,
+                focusedLabelColor = Color.Gray,
+                unfocusedLabelColor = Color.Gray,
+                errorBorderColor = Color.Red,
+                errorLabelColor = Color.Red
+            )
+        )
+        if (errorMessage.isNotEmpty()) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+// Componente GenderButton
 @Composable
 fun GenderButton(
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val goldColor = Color(0xFFBEA314)
+    val goldColor = Color(0xFFFFBF33)
 
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .width(100.dp)
-            .height(48.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) goldColor else Color(0xFF2C2B30),
             contentColor = if (isSelected) Color.Black else Color.White
         ),
-        border = BorderStroke(1.dp, goldColor)
+        border = BorderStroke(2.dp, goldColor),
+        elevation = if (isSelected) ButtonDefaults.buttonElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp
+        ) else ButtonDefaults.buttonElevation(0.dp)
     ) {
         Text(
             text = text,
-            fontSize = 12.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            fontSize = 16.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
         )
     }
 }
