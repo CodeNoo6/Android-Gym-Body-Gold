@@ -3,16 +3,22 @@ package com.gimomagic.gymbodygold.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Brain
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -42,11 +48,16 @@ fun HomeScreen(
     onLogout: () -> Unit = {},
     onContactGym: () -> Unit = {}
 ) {
-    val gold = Color(0xFFFFBF33)
-    val darkBg = Color(0xFF19181C)
-    val cardBg = Color(0xFF2C2B30)
+    var selectedItem by remember { mutableStateOf("Inicio") }
+
 
     Scaffold(
+        bottomBar = {
+            BottomMenuBar(
+                selectedItem = selectedItem,
+                onItemSelected = { selectedItem = it }
+            )
+        },
         topBar = {
             TopAppBar(
                 title = {
@@ -56,7 +67,7 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = "Gym Body Gold",
-                            color = gold,
+                            color = BrandGold,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -67,7 +78,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.ExitToApp,
                             contentDescription = "Cerrar Sesión",
-                            tint = gold
+                            tint = BrandGold
                         )
                     }
                 },
@@ -76,157 +87,273 @@ fun HomeScreen(
                 )
             )
         },
-        containerColor = darkBg
+        containerColor = Color(0xFF19181C)
     ) { paddingValues ->
+        when (selectedItem) {
+            "Inicio" -> InicioContent(
+                userName = userName,
+                onContactGym = onContactGym,
+                modifier = Modifier.padding(paddingValues)
+            )
+            "Perfil" -> PerfilContent(
+                userName = userName,
+                onLogout = onLogout,
+                modifier = Modifier.padding(paddingValues)
+            )
+        }
+    }
+}
+
+@Composable
+fun MembresiaCard(
+    plan: String = "Básica",
+    estado: String = "Pendiente de Activación",
+    precio: String = "$70.000/mes",
+    onContactarClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E1C1C) // Fondo oscuro
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Bienvenida
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = gold.copy(alpha = 0.9f)),
-                modifier = Modifier.fillMaxWidth()
+            // Encabezado
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
+                Text(
+                    text = "Mi Membresía",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color(0xFFFFBF33)
+                )
+                Text(
+                    text = estado,
                     modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Texto a la izquierda
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Text(
-                            text = "¡Bienvenido!",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = Color.Black
+                        .background(
+                            color = Color(0xFF8C6B1F),
+                            shape = RoundedCornerShape(8.dp)
                         )
-                        Text(
-                            text = userName,
-                            fontSize = 16.sp,
-                            color = Color.Black
-                        )
-                    }
-
-                    // Logo circular más grande a la derecha
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp) // más grande
-                            .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color(0xFFFFD700),
-                                        Color(0xFFFFBF33)
-                                    )
-                                ),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Logo",
-                            modifier = Modifier
-                                .size(60.dp) // logo más grande dentro del círculo
-                                .clip(CircleShape)
-                        )
-                    }
-                }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = Color(0xFFFFBF33),
+                    fontSize = 12.sp
+                )
             }
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = plan, color = Color.White, fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Membresía
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = cardBg),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Mi Membresía", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(
-                            "Pendiente de Activación",
-                            color = gold,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+            // Ícono central
+            Icon(
+                imageVector = Icons.Default.AccessTime, // ⏰ Cambia por un ícono más cercano
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = Color(0xFFFFBF33)
+            )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        "Membresía Pendiente de Activación",
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        "Tu membresía Básica está registrada pero aún no ha sido activada por el administrador.",
-                        color = Color.White.copy(0.8f),
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Precio: \$70.000/mes",
-                        color = gold,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
+            // Texto principal
+            Text(
+                text = "Membresía Pendiente de Activación",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFFBF33),
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                    Button(
-                        onClick = onContactGym,
-                        colors = ButtonDefaults.buttonColors(containerColor = gold, contentColor = Color.Black),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("📞 Contactar Gimnasio", fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
+            Text(
+                text = "Tu membresía $plan está registrada pero aún no ha sido activada por el administrador.",
+                color = Color.Gray,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Gymius IA
-            GymiusCard(
-                onClick = {
+            Text(
+                text = "Precio: $precio",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFFBF33),
+                fontSize = 14.sp
+            )
 
-                }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Contacta al gimnasio para activar tu membresía",
+                color = Color.Gray,
+                fontSize = 12.sp,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Notificaciones
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = cardBg),
+            // Botón
+            Button(
+                onClick = onContactarClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFBF33),
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.Default.Call,
+                    contentDescription = "Llamar",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Contactar Gimnasio", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+fun PerfilContent(
+    userName: String,
+    onLogout: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val gold = Color(0xFFFFBF33)
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("👤 Perfil de $userName", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = onLogout,
+            colors = ButtonDefaults.buttonColors(containerColor = gold, contentColor = Color.Black)
+        ) {
+            Text("Cerrar Sesión")
+        }
+    }
+}
+
+@Composable
+fun InicioContent(
+    userName: String,
+    onContactGym: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val gold = Color(0xFFFFBF33)
+    val darkBg = Color(0xFF19181C)
+    val cardBg = Color(0xFF2C2B30)
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        // Bienvenida
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = gold.copy(alpha = 0.9f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Texto a la izquierda
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    Text("🔔 Notificaciones", color = Color.White, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(8.dp))
-                    Text("No hay notificaciones", color = Color.White.copy(0.6f))
+                    Text(
+                        text = "¡Bienvenido!",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = userName,
+                        fontSize = 16.sp,
+                        color = Color.Black
+                    )
                 }
+
+                // Logo circular más grande a la derecha
+                Box(
+                    modifier = Modifier
+                        .size(70.dp) // más grande
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFFFFD700),
+                                    Color(0xFFFFBF33)
+                                )
+                            ),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo),
+                        contentDescription = "Logo",
+                        modifier = Modifier
+                            .size(60.dp) // logo más grande dentro del círculo
+                            .clip(CircleShape)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Membresía
+        MembresiaCard {  }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Gymius IA
+        GymiusCard(
+            onClick = {
+
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Notificaciones
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = cardBg),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("🔔 Notificaciones", color = Color.White, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                Text("No hay notificaciones", color = Color.White.copy(0.6f))
             }
         }
     }
@@ -391,6 +518,43 @@ fun GymiusCard(onClick: () -> Unit) {
     }
 }
 
+@Composable
+fun BottomMenuBar(
+    selectedItem: String,
+    onItemSelected: (String) -> Unit
+) {
+    val items = listOf("Inicio", "Perfil")
+
+    NavigationBar(
+        containerColor = Color(0xFF19181C)
+    ) {
+        val items = listOf("Inicio", "Perfil")
+        val icons = listOf(Icons.Default.Home, Icons.Default.Person)
+
+        items.forEachIndexed { index, item ->
+            NavigationBarItem(
+                selected = selectedItem == item,
+                onClick = { onItemSelected(item) },
+                icon = {
+                    Icon(
+                        imageVector = icons[index],
+                        contentDescription = item
+                    )
+                },
+                label = {
+                    Text(item)
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color(0xFFFFBF33),   // icono dorado activo
+                    unselectedIconColor = Color.Gray,       // icono gris inactivo
+                    selectedTextColor = Color(0xFFFFBF33),  // texto dorado activo
+                    unselectedTextColor = Color.Gray,       // texto gris inactivo
+                    indicatorColor = Color.Transparent      // 👈 quita el óvalo
+                )
+            )
+        }
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
