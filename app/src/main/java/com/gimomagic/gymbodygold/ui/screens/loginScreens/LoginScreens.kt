@@ -55,7 +55,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import com.gimomagic.gymbodygold.R
 import android.util.Patterns
-import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Brush
@@ -67,20 +66,36 @@ import com.gimomagic.gymbodygold.auth.AuthState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
 
+// Data class for user registration
+data class UserRegistrationData(
+    val email: String,
+    val displayName: String,
+    val idTipoDocumento: String,
+    val numeroDocumento: String,
+    val nombre: String,
+    val apellido: String,
+    val telefono: String,
+    val fechaNacimiento: String,
+    val direccion: String,
+    val activo: Boolean = true,
+    val idGenero: String,
+    val peso: String? = null,
+    val estatura: String? = null,
+    val rol: String = "usuario"
+)
 
-@Composable
-fun ShowCenteredToast(message: String) {
-    val context = LocalContext.current
+fun ShowCenteredToast(context: android.content.Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).apply {
-        setGravity(Gravity.CENTER, 0, 0)
         show()
     }
 }
+
 @Composable
 fun LoginScreens(
-    authViewModel: AuthViewModel = viewModel(), // Agregar ViewModel
+    authViewModel: AuthViewModel = viewModel(),
     onForgotPasswordClick: () -> Unit = {},
-    onLoginSuccess: () -> Unit = {} // Callback para navegación exitosa
+    onLoginSuccess: () -> Unit = {},
+    onRegisterSuccess: () -> Unit = {} // Add callback for registration success
 ) {
     var isLoginScreen by remember { mutableStateOf(true) }
 
@@ -90,64 +105,55 @@ fun LoginScreens(
     val error by authViewModel.error.observeAsState()
     val context = LocalContext.current
 
-
-    // Manejar el éxito del login
+    // Manejar el éxito del login/registro
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
-            onLoginSuccess() // Navegar a pantalla principal
+            if (isLoginScreen) {
+                onLoginSuccess()
+            } else {
+                onRegisterSuccess()
+            }
         }
     }
 
     LaunchedEffect(error) {
         error?.let { errorMessage ->
-            ShowCenteredToast(errorMessage)
+            val displayMessage = if (isLoginScreen) {
+                "Las credenciales proporcionadas no son válidas"
+            } else {
+                errorMessage
+            }
+            ShowCenteredToast(context, displayMessage)
             authViewModel.clearError()
         }
     }
 
-    Scaffold() { padding ->
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = Color(0xFF19181C))
-    ) {
-        Column(
+    Scaffold { padding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 40.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .background(color = Color(0xFF19181C))
         ) {
-            // Tu logo actual (sin cambios)
-            Spacer(modifier = Modifier.height(30.dp))
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(180.dp) // Halo más grande
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFFFFBF33).copy(alpha = 0.6f), // Centro más brillante
-                                Color(0xFFFFBF33).copy(alpha = 0.3f), // Capa media
-                                Color(0xFFFFBF33).copy(alpha = 0.1f), // Capa externa suave
-                                Color.Transparent
-                            ),
-                            radius = 180f
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                // Círculo intermedio para más profundidad
+                // Logo section
+                Spacer(modifier = Modifier.height(30.dp))
                 Box(
                     modifier = Modifier
-                        .size(140.dp)
+                        .size(180.dp)
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    Color(0xFFFFBF33).copy(alpha = 0.8f),
-                                    Color(0xFFFFBF33).copy(alpha = 0.4f),
+                                    Color(0xFFFFBF33).copy(alpha = 0.6f),
+                                    Color(0xFFFFBF33).copy(alpha = 0.3f),
+                                    Color(0xFFFFBF33).copy(alpha = 0.1f),
                                     Color.Transparent
                                 ),
-                                radius = 140f
+                                radius = 180f
                             ),
                             shape = CircleShape
                         ),
@@ -155,100 +161,118 @@ fun LoginScreens(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(140.dp)
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
-                                        Color(0xFFFFD700),
-                                        Color(0xFFFFBF33),
+                                        Color(0xFFFFBF33).copy(alpha = 0.8f),
+                                        Color(0xFFFFBF33).copy(alpha = 0.4f),
+                                        Color.Transparent
                                     ),
-                                    radius = 60f
+                                    radius = 140f
                                 ),
-                                shape = CircleShape
-                            )
-                            .border(
-                                width = 2.dp,
-                                color = Color(0xFFB8860B),
                                 shape = CircleShape
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "Gym Body Gold Logo",
+                        Box(
                             modifier = Modifier
-                                .size(115.dp)
-                                .clip(CircleShape)
-                        )
+                                .size(120.dp)
+                                .background(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFFFFD700),
+                                            Color(0xFFFFBF33),
+                                        ),
+                                        radius = 60f
+                                    ),
+                                    shape = CircleShape
+                                )
+                                .border(
+                                    width = 2.dp,
+                                    color = Color(0xFFB8860B),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.logo),
+                                contentDescription = "Gym Body Gold Logo",
+                                modifier = Modifier
+                                    .size(115.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
                     }
                 }
-            }
-            Text(
-                text = "Gym Body Gold",
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFBF33)
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = if (isLoginScreen) "Bienvenido de vuelta" else "Crear Cuenta",
-                fontSize = 16.sp,
-                color = Color(0xFFFFBF33)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF2C2B30)),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                Button(
-                    onClick = { isLoginScreen = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
-                        contentColor = if (isLoginScreen) Color.Black else Color.White
-                    )
-                ) {
-                    Text(text = "Iniciar Sesión")
-                }
-                Button(
-                    onClick = { isLoginScreen = false },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(4.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
-                        contentColor = if (!isLoginScreen) Color.Black else Color.White
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(0.dp)
-                ) {
-                    Text(text = "Crear Cuenta")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            if (isLoginScreen) {
-                LoginContentWithFirebase(
-                    authViewModel = authViewModel,
-                    loading = loading,
-                    onForgotPasswordClick = onForgotPasswordClick
+                Text(
+                    text = "Gym Body Gold",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFFBF33)
                 )
-            } else {
-                /*CreateAccountContentWithFirebase(
-                    authViewModel = authViewModel,
-                    loading = loading
-                )*/
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = if (isLoginScreen) "Bienvenido de vuelta" else "Crear Cuenta",
+                    fontSize = 16.sp,
+                    color = Color(0xFFFFBF33)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Tab buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color(0xFF2C2B30)),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    Button(
+                        onClick = { isLoginScreen = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(4.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
+                            contentColor = if (isLoginScreen) Color.Black else Color.White
+                        )
+                    ) {
+                        Text(text = "Iniciar Sesión")
+                    }
+                    Button(
+                        onClick = { isLoginScreen = false },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(4.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (!isLoginScreen) Color(0xFFFFBF33) else Color.Transparent,
+                            contentColor = if (!isLoginScreen) Color.Black else Color.White
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(0.dp)
+                    ) {
+                        Text(text = "Crear Cuenta")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                if (isLoginScreen) {
+                    LoginContentWithFirebase(
+                        authViewModel = authViewModel,
+                        loading = loading,
+                        onForgotPasswordClick = onForgotPasswordClick
+                    )
+                } else {
+                    CreateAccountContentWithFirebase(
+                        authViewModel = authViewModel,
+                        loading = loading
+                    )
+                }
             }
         }
     }
-}
 }
 
 @Composable
@@ -268,7 +292,7 @@ fun LoginContentWithFirebase(
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Email Field (sin cambios)
+        // Email Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -301,7 +325,7 @@ fun LoginContentWithFirebase(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Field (sin cambios)
+        // Password Field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -348,11 +372,11 @@ fun LoginContentWithFirebase(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Login Button - MODIFICADO PARA FIREBASE
+        // Login Button
         Button(
             onClick = {
                 if (email.isNotBlank() && password.isNotBlank()) {
-                    authViewModel.signIn(email, password) // Usar Firebase
+                    authViewModel.signIn(email, password)
                 }
             },
             modifier = Modifier
@@ -402,7 +426,7 @@ fun LoginContentWithFirebase(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Forgot Password Link (sin cambios)
+        // Forgot Password Link
         Text(
             text = "¿Olvidaste tu contraseña?",
             color = goldColor.copy(alpha = 0.8f),
@@ -421,8 +445,11 @@ fun LoginContentWithFirebase(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateAccountContent() {
-    // Estados del formulario
+fun CreateAccountContentWithFirebase(
+    authViewModel: AuthViewModel,
+    loading: Boolean
+) {
+    // Form states
     var documentTypeExpanded by remember { mutableStateOf(false) }
     val documentTypes = listOf("CC", "TI", "CE", "Pasaporte")
     var selectedDocumentType by remember { mutableStateOf(documentTypes[0]) }
@@ -433,7 +460,6 @@ fun CreateAccountContent() {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
-    var age by rememberSaveable { mutableStateOf("") }
     var weight by rememberSaveable { mutableStateOf("") }
     var height by rememberSaveable { mutableStateOf("") }
     var phone by rememberSaveable { mutableStateOf("") }
@@ -441,7 +467,7 @@ fun CreateAccountContent() {
     var selectedGender by rememberSaveable { mutableStateOf("") }
     var birthDate by remember { mutableStateOf("") }
 
-    // Estados de validación
+    // Validation states
     var documentError by remember { mutableStateOf("") }
     var nameError by remember { mutableStateOf("") }
     var lastNameError by remember { mutableStateOf("") }
@@ -453,17 +479,16 @@ fun CreateAccountContent() {
     var birthDateError by remember { mutableStateOf("") }
     var genderError by remember { mutableStateOf("") }
 
-    // Estados adicionales
+    // Additional states
     var showDatePicker by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var isFormSubmitting by remember { mutableStateOf(false) }
 
     val goldColor = Color(0xFFFFBF33)
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
 
-    // FUNCIONES DE VALIDACIÓN
+    // Validation functions
     fun validateDocumentNumber(number: String, type: String): String {
         return when (type) {
             "CC", "TI", "CE" -> {
@@ -575,7 +600,6 @@ fun CreateAccountContent() {
         }
     }
 
-    // Función para validar en tiempo real
     fun validateField(field: String, value: String) {
         when (field) {
             "documentNumber" -> documentError = validateDocumentNumber(value, selectedDocumentType)
@@ -595,7 +619,6 @@ fun CreateAccountContent() {
         }
     }
 
-    // Función para validar todo el formulario
     fun validateCompleteForm(): Boolean {
         genderError = if (selectedGender.isEmpty()) "Debe seleccionar un género" else ""
 
@@ -618,47 +641,30 @@ fun CreateAccountContent() {
         return !hasErrors
     }
 
-    // Función para manejar el envío del formulario
     fun handleFormSubmission() {
-        isFormSubmitting = true
-
         if (validateCompleteForm()) {
-            coroutineScope.launch {
-                try {
-                    // Simular envío
-                    delay(2000)
+            // Create user registration data following the Swift structure
+            val userRegistrationData = UserRegistrationData(
+                email = email,
+                displayName = "$firstName $lastName",
+                idTipoDocumento = selectedDocumentType,
+                numeroDocumento = documentNumber,
+                nombre = firstName,
+                apellido = lastName,
+                telefono = phone,
+                fechaNacimiento = birthDate,
+                direccion = address,
+                activo = true,
+                idGenero = selectedGender,
+                peso = if (weight.isNotEmpty()) weight else null,
+                estatura = if (height.isNotEmpty()) height else null,
+                rol = "usuario"
+            )
 
-                    // Datos para enviar
-                    val userData = mapOf(
-                        "tipoDocumento" to selectedDocumentType,
-                        "numeroDocumento" to documentNumber,
-                        "nombre" to firstName,
-                        "apellido" to lastName,
-                        "nombreUsuario" to username,
-                        "email" to email,
-                        "password" to password,
-                        "telefono" to phone,
-                        "genero" to selectedGender,
-                        "fechaNacimiento" to birthDate,
-                        "edad" to age,
-                        "peso" to weight,
-                        "estatura" to height,
-                        "direccion" to address
-                    )
-
-                    println("Datos válidos para enviar: $userData")
-                    // TODO: Aquí puedes hacer la llamada a tu API
-                    // val response = apiService.registerUser(userData)
-
-                } catch (e: Exception) {
-                    println("Error al registrar: ${e.message}")
-                } finally {
-                    isFormSubmitting = false
-                }
-            }
+            // Call Firebase registration with user data
+            authViewModel.signUpWithUserData(email, password, userRegistrationData)
         } else {
-            isFormSubmitting = false
-            // Hacer scroll al principio para ver errores
+            // Scroll to top to see errors
             coroutineScope.launch {
                 scrollState.animateScrollTo(0)
             }
@@ -675,7 +681,7 @@ fun CreateAccountContent() {
         Text(text = "Información de Documento", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tipo de Documento
+        // Document type dropdown
         ExposedDropdownMenuBox(
             expanded = documentTypeExpanded,
             onExpandedChange = { documentTypeExpanded = !documentTypeExpanded },
@@ -720,7 +726,7 @@ fun CreateAccountContent() {
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Número de Documento CON VALIDACIÓN
+        // Document number with validation
         ValidatedTextField(
             value = documentNumber,
             onValueChange = { newValue ->
@@ -745,7 +751,7 @@ fun CreateAccountContent() {
         Text(text = "Información Personal", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nombre CON VALIDACIÓN
+        // Name fields
         ValidatedTextField(
             value = firstName,
             onValueChange = { newValue ->
@@ -760,7 +766,6 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Apellido CON VALIDACIÓN
         ValidatedTextField(
             value = lastName,
             onValueChange = { newValue ->
@@ -775,7 +780,6 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nombre de Usuario CON VALIDACIÓN
         ValidatedTextField(
             value = username,
             onValueChange = { newValue ->
@@ -790,7 +794,7 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Fecha de Nacimiento CON VALIDACIÓN
+        // Birth date picker
         OutlinedTextField(
             value = birthDate,
             onValueChange = { },
@@ -837,34 +841,37 @@ fun CreateAccountContent() {
             )
         }
 
-        // Mostrar edad calculada si hay fecha de nacimiento
-        if (birthDate.isNotEmpty() && age.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Card(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = goldColor.copy(alpha = 0.1f)
-                    )
+        // Show calculated age if birth date is provided
+        if (birthDate.isNotEmpty()) {
+            val calculatedAge = calculateAge(birthDate)
+            if (calculatedAge > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "Edad: $age años",
-                        color = goldColor,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
+                    Card(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = goldColor.copy(alpha = 0.1f)
+                        )
+                    ) {
+                        Text(
+                            text = "Edad: $calculatedAge años",
+                            color = goldColor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Género CON VALIDACIÓN
+        // Gender selection
         Text(text = "Género", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         if (genderError.isNotEmpty()) {
             Text(
@@ -905,7 +912,7 @@ fun CreateAccountContent() {
         Text(text = "Información de Contacto", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Teléfono CON VALIDACIÓN
+        // Phone field
         ValidatedTextField(
             value = phone,
             onValueChange = { newValue ->
@@ -920,7 +927,7 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Dirección (opcional)
+        // Address field (optional)
         OutlinedTextField(
             value = address,
             onValueChange = { address = it },
@@ -947,7 +954,7 @@ fun CreateAccountContent() {
         Text(text = "Información Física (Opcional)", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Peso y Estatura en fila (sin edad manual)
+        // Weight and height in a row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -1013,7 +1020,7 @@ fun CreateAccountContent() {
         Text(text = "Credenciales de Acceso", color = goldColor, fontSize = 14.sp, textAlign = TextAlign.Start, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Email CON VALIDACIÓN
+        // Email field
         ValidatedTextField(
             value = email,
             onValueChange = { newValue ->
@@ -1028,7 +1035,7 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Contraseña CON VALIDACIÓN
+        // Password fields
         ValidatedPasswordField(
             value = password,
             onValueChange = { newValue ->
@@ -1043,7 +1050,6 @@ fun CreateAccountContent() {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Confirmar Contraseña CON VALIDACIÓN
         ValidatedPasswordField(
             value = confirmPassword,
             onValueChange = { newValue ->
@@ -1059,21 +1065,21 @@ fun CreateAccountContent() {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón de Crear Cuenta CON VALIDACIÓN
+        // Registration button
         Button(
             onClick = { handleFormSubmission() },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
-            enabled = !isFormSubmitting,
+            enabled = !loading,
             colors = ButtonDefaults.buttonColors(
                 containerColor = goldColor,
                 contentColor = Color.Black,
                 disabledContainerColor = goldColor.copy(alpha = 0.6f)
             )
         ) {
-            if (isFormSubmitting) {
+            if (loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     color = Color.Black
@@ -1088,7 +1094,7 @@ fun CreateAccountContent() {
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    // DatePicker Dialog
+    // Date picker dialog
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -1180,7 +1186,7 @@ fun CreateAccountContent() {
     }
 }
 
-// COMPONENTES AUXILIARES PARA VALIDACIÓN
+// Helper components for validation
 @Composable
 fun ValidatedTextField(
     value: String,
@@ -1293,7 +1299,7 @@ fun ValidatedPasswordField(
     }
 }
 
-// Componente GenderButton
+// Gender button component
 @Composable
 fun GenderButton(
     text: String,
