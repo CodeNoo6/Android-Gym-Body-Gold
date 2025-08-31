@@ -66,6 +66,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
 
+    implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
+
     implementation("com.google.firebase:firebase-analytics")
 
     testImplementation("junit:junit:4.13.2")

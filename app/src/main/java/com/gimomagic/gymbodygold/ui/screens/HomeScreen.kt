@@ -2,15 +2,26 @@ package com.gimomagic.gymbodygold.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Brain
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import com.gimomagic.gymbodygold.R
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -194,20 +205,11 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Gymius IA
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = cardBg),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("🤖 Gymius IA", color = gold, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.width(8.dp))
-                    Text("En línea", color = Color.Green, fontSize = 14.sp)
+            GymiusCard(
+                onClick = {
+
                 }
-            }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -229,6 +231,166 @@ fun HomeScreen(
         }
     }
 }
+
+@Composable
+fun ChatInput(
+    message: String,
+    onMessageChange: (String) -> Unit,
+    onSend: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = message,
+            onValueChange = onMessageChange,
+            placeholder = {
+                Text(
+                    "Pregunta sobre ejercicios, nutrición...",
+                    color = Color.Gray
+                )
+            },
+            shape = RoundedCornerShape(24.dp), // Bordes redondeados
+            modifier = Modifier
+                .weight(1f)
+                .height(50.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = BrandGold,     // borde dorado activo
+                unfocusedBorderColor = BrandGold,   // borde dorado inactivo
+                cursorColor = BrandGold,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
+            ),
+            singleLine = true
+        )
+
+        IconButton(
+            onClick = { if (message.isNotBlank()) onSend() },
+            modifier = Modifier
+                .size(50.dp)
+                .padding(start = 8.dp)
+                .background(BrandGold, CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Send,
+                contentDescription = "Enviar",
+                tint = Color.Black
+            )
+        }
+    }
+}
+
+@Composable
+fun GymiusCard(onClick: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf("") }
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Column {
+            // Cabecera (Gymius IA + botón expandir)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Icono circular con cerebro
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color(0xFFFFC107), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = FontAwesomeIcons.Solid.Brain,
+                            contentDescription = "Cerebro",
+                            tint = Color.Black,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Column {
+                        Text(
+                            text = "Gymius IA",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "En línea",
+                            color = Color.Green,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                // Botón de expandir/colapsar
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Expandir chat",
+                        tint = Color.White
+                    )
+                }
+            }
+
+            // Chat expandible
+            if (expanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF2C2C2E))
+                        .padding(12.dp)
+                ) {
+                    // Mensaje de bienvenida
+                    Text(
+                        text = "\uD83D\uDC9B ¡Hola! Soy Gymius, tu asistente personal en Gym Body Gold. ¿En qué puedo ayudarte hoy?",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .background(Color(0xFF1C1C1E), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Caja de texto + botón enviar
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.Transparent),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ChatInput(
+                            message = message,
+                            onMessageChange = { message = it },
+                            onSend = {
+                                // Aquí mandas el mensaje al chat
+                                println("Mensaje enviado: $message")
+                                message = "" // limpiar campo
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
